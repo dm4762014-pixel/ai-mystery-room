@@ -6,15 +6,19 @@
   "scripts": {
     "dev": "pnpm --parallel --filter @mystery/api --filter @mystery/web dev",
     "build": "pnpm -r build",
-    "lint": "pnpm -r lint",
+    "lint": "pnpm -r lint && prettier --check api tests scripts",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "test": "pnpm -r test && pnpm test:proxy",
     "test:integration": "pnpm --filter @mystery/api test:integration",
     "test:e2e": "pnpm --filter @mystery/web test:e2e",
     "seed:demo": "pnpm --filter @mystery/api seed:demo",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "start": "pnpm --filter @mystery/api start"
+    "start": "pnpm --filter @mystery/api start",
+    "test:proxy": "node --test tests/proxy.test.cjs",
+    "test:live": "pnpm --filter @mystery/api exec tsx ../../scripts/live-check.mts",
+    "dev:local": "node scripts/start-local.cjs",
+    "check:secrets": "node scripts/verify-secrets.cjs"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

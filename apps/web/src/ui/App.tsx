@@ -194,7 +194,7 @@ function HomePage({
   }
 
   return (
-    <main>
+    <main className="min-h-screen">
       <header className="topbar">
         <button
           className="wordmark"
@@ -301,7 +301,7 @@ function HomePage({
               </div>
               <small>
                 {localModel?.available
-                  ? `${localModel.model} · runs on this computer`
+                  ? `${localModel.model} · AI text generation`
                   : (localModel?.reason ?? "Checking AI provider…")}
               </small>
             </div>
@@ -546,7 +546,9 @@ function CaseRoom({
     try {
       const hint = await requestHint(caseId, hintKey.current);
       setHints((current) => [...current, hint.hintText]);
-      if (mystery) setMystery({ ...mystery, hintCount: hint.hintCount });
+      setMystery((current) =>
+        current ? { ...current, hintCount: hint.hintCount } : current,
+      );
       hintKey.current = null;
       setError("");
     } catch (reason) {
@@ -1077,7 +1079,7 @@ function ResultPage({
     (suspect) => suspect.suspectId === result.correctSuspectId,
   );
   return (
-    <main className="result-page">
+    <main className="result-page min-h-screen">
       <header className="topbar page-width">
         <button className="wordmark" onClick={onHome}>
           <span className="brand-mark">

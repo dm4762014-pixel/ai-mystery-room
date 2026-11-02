@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import app from "../src/app.js";
+import { createDemoCase } from "../src/demoCase.js";
 import {
   Attempt,
   CaseSecret,
@@ -380,4 +381,134 @@ it("persists unique discoveries, enforces ownership, and scores server-side", as
   expect(
     (await fetch(url, { method: "POST", headers, body: "{}" })).status,
   ).toBe(409);
+});
+
+it("enforces each difficulty's hint limit and restores revealed hints", async () => {
+  const owner = await startSession();
+  const session = await GuestSession.findOne().lean();
+  if (!session) throw new Error("Session missing");
+  const headers = {
+    Cookie: owner.cookie,
+    Origin: "http://localhost:5173",
+    "X-CSRF-Token": owner.csrfToken,
+    "Content-Type": "application/json",
+  };
+  for (const difficulty of ["easy", "medium", "hard"] as const) {
+    const generated = createDemoCase(
+      session.sessionHash,
+      `case_hints_${difficulty}`,
+      new Date(),
+    );
+    generated.mystery.fixture = false;
+    generated.mystery.difficulty = difficulty;
+    await MysteryCase.create(generated.mystery);
+    await CaseSecret.create(generated.secret);
+    const limit = difficulty === "easy" ? 2 : 3;
+    for (let index = 0; index < limit; index++) {
+      const response = await fetch(
+        `${baseUrl}/api/v1/cases/${generated.mystery.caseId}/hints`,
+        { method: "POST", headers, body: "{}" },
+      );
+      expect(response.status).toBe(200);
+    }
+    const extra = await fetch(
+      `${baseUrl}/api/v1/cases/${generated.mystery.caseId}/hints`,
+      { method: "POST", headers, body: "{}" },
+    );
+    expect(extra.status).toBe(409);
+    const history = await fetch(
+      `${baseUrl}/api/v1/cases/${generated.mystery.caseId}/hints`,
+      { headers },
+    );
+    expect((await history.json()).hintsRevealed).toHaveLength(limit);
+  }
+});
+
+it("keeps the final score consistent with simultaneous clue, hint and verdict requests", async () => {
+  const owner = await startSession();
+  const headers = {
+    Cookie: owner.cookie,
+    Origin: "http://localhost:5173",
+    "X-CSRF-Token": owner.csrfToken,
+    "Content-Type": "application/json",
+  };
+  const created = await fetch(`${baseUrl}/api/v1/demo-case`, {
+    method: "POST",
+    headers,
+    body: "{}",
+  });
+  const { caseId } = (await created.json()) as { caseId: string };
+  const results = await Promise.all([
+    fetch(`${baseUrl}/api/v1/cases/${caseId}/clues/ev_01/discover`, {
+      method: "POST",
+      headers,
+      body: "{}",
+    }),
+    fetch(`${baseUrl}/api/v1/cases/${caseId}/hints`, {
+      method: "POST",
+      headers,
+      body: "{}",
+    }),
+    fetch(`${baseUrl}/api/v1/cases/${caseId}/accusations`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ suspectId: "sus_03" }),
+    }),
+  ]);
+  expect(results[2]!.status).toBe(201);
+  const verdict = await results[2]!.json();
+  const mystery = await MysteryCase.findOne({ caseId }).lean();
+  const hints = await HintProgress.findOne({ caseId }).lean();
+  expect(verdict.score).toBe(
+    150 +
+      5 * (mystery?.discoveredEvidenceIds?.length ?? 0) -
+      10 * (hints?.count ?? 0),
+  );
+  const late = await fetch(`${baseUrl}/api/v1/cases/${caseId}/hints`, {
+    method: "POST",
+    headers,
+    body: "{}",
+  });
+  expect(late.status).toBe(409);
+});
+
+it("blocks daily generation exhaustion before queueing another provider call", async () => {
+  const owner = await startSession();
+  const session = await GuestSession.findOne().lean();
+  if (!session) throw new Error("Session missing");
+  const now = new Date();
+  await GenerationJob.insertMany(
+    [0, 1, 2].map((index) => ({
+      jobId: `quota_${index}`,
+      ownerSessionHash: session.sessionHash,
+      idempotencyKeyHash: `key_${index}`,
+      requestHash: `request_${index}`,
+      scenario: "A fictional stage key vanishes during a rehearsal.",
+      difficulty: "easy",
+      status: "failed",
+      step: "failed",
+      progressPercent: 10,
+      createdAt: now,
+      updatedAt: now,
+      expiresAt: new Date(now.getTime() + 86400000),
+    })),
+  );
+  const response = await fetch(`${baseUrl}/api/v1/cases`, {
+    method: "POST",
+    headers: {
+      Cookie: owner.cookie,
+      Origin: "http://localhost:5173",
+      "X-CSRF-Token": owner.csrfToken,
+      "Content-Type": "application/json",
+      "Idempotency-Key": "quota-check",
+    },
+    body: JSON.stringify({
+      scenario: "A fictional stage key vanishes during a rainy rehearsal.",
+      difficulty: "easy",
+      mediaTier: "standard",
+    }),
+  });
+  expect(response.status).toBe(429);
+  expect((await response.json()).error.code).toBe("GENERATION_QUOTA_EXCEEDED");
+  expect(await GenerationJob.countDocuments()).toBe(3);
 });

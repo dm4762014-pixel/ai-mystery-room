@@ -152,7 +152,7 @@ export async function resumeLocalGenerationJobs(): Promise<void> {
   await pumpQueue();
 }
 
-export async function enqueueLocalGeneration(input: {
+async function enqueueGeneration(input: {
   ownerSessionHash: string;
   scenario: string;
   difficulty: "easy" | "medium" | "hard";
@@ -186,6 +186,30 @@ export async function enqueueLocalGeneration(input: {
   }
 
   const now = new Date();
+  const since = new Date(now);
+  since.setUTCHours(0, 0, 0, 0);
+  const sessionLimit = Math.max(
+    1,
+    Math.floor(Number(process.env.MAX_GENERATIONS_PER_GUEST_PER_DAY) || 3),
+  );
+  const dailyLimit = Math.max(
+    1,
+    Math.floor(Number(process.env.MAX_GENERATIONS_PER_DAY) || 30),
+  );
+  const [sessionCount, dailyCount, active] = await Promise.all([
+    GenerationJob.countDocuments({
+      ownerSessionHash: input.ownerSessionHash,
+      createdAt: { $gte: since },
+    }),
+    GenerationJob.countDocuments({ createdAt: { $gte: since } }),
+    GenerationJob.exists({
+      ownerSessionHash: input.ownerSessionHash,
+      status: { $in: ["queued", "generating"] },
+    }),
+  ]);
+  if (active) throw new Error("GENERATION_IN_PROGRESS");
+  if (sessionCount >= sessionLimit || dailyCount >= dailyLimit)
+    throw new Error("GENERATION_QUOTA_EXCEEDED");
   const jobId = `job_${randomUUID()}`;
   let created: GenerationJobDocument;
   try {
@@ -222,4 +246,14 @@ export async function enqueueLocalGeneration(input: {
   }
   void pumpQueue();
   return { jobId: created.jobId, status: created.status };
+}
+
+// Admission is serialized because quotas and pending-job checks span multiple records.
+let admissionTail: Promise<unknown> = Promise.resolve();
+export function enqueueLocalGeneration(
+  input: Parameters<typeof enqueueGeneration>[0],
+) {
+  const task = admissionTail.then(() => enqueueGeneration(input));
+  admissionTail = task.catch(() => undefined);
+  return task;
 }

@@ -140,9 +140,109 @@ for (const width of [1280, 375]) {
       page.getByRole("heading", { name: "Well observed." }),
     ).toBeVisible();
     await expect(page.locator(".score-card b")).toHaveText("175");
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: `../../artifacts/screenshots/result-${width}.png`,
+      fullPage: true,
+    });
     await page.getByRole("button", { name: /start a new mystery/i }).click();
     await expect(
       page.getByRole("heading", { name: /every detail/i }),
     ).toBeVisible();
+  });
+}
+
+for (const failed of [false, true]) {
+  test(`custom premise generation ${failed ? "shows provider failure" : "opens the generated room"}`, async ({
+    page,
+  }) => {
+    const { mystery } = createDemoCase(
+      "test",
+      "case_generated_browser",
+      new Date(),
+    );
+    const dto = {
+      caseId: mystery.caseId,
+      title: mystery.title,
+      intro: mystery.intro,
+      difficulty: "medium",
+      mediaTier: "standard",
+      settingTimeZone: mystery.settingTimeZone,
+      suspects: mystery.suspects,
+      evidence: mystery.evidence,
+      generatedMediaDisclosure: "Fictional generated text.",
+      hintCount: 0,
+      verdictSubmitted: false,
+      discoveredEvidenceIds: [],
+      hintsRevealed: [],
+    };
+    await page.route("**/api/v1/**", async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith("/sessions/guest"))
+        return route.fulfill({
+          json: {
+            csrfToken: "browser-token",
+            expiresAt: "2030-01-01T00:00:00.000Z",
+          },
+        });
+      if (path.endsWith("/capabilities"))
+        return route.fulfill({
+          json: {
+            standard: true,
+            full: false,
+            localText: { available: true, model: "gemini-test" },
+          },
+        });
+      if (path.endsWith("/cases")) {
+        expect(route.request().postDataJSON()).toMatchObject({
+          difficulty: "medium",
+          mediaTier: "standard",
+        });
+        expect(route.request().headers()["x-csrf-token"]).toBe("browser-token");
+        return route.fulfill({
+          status: 202,
+          json: { jobId: "job_browser", status: "queued" },
+        });
+      }
+      if (path.includes("/jobs/"))
+        return route.fulfill({
+          json: {
+            jobId: "job_browser",
+            status: failed ? "failed" : "ready",
+            step: failed ? "failed" : "ready",
+            progressPercent: failed ? 10 : 100,
+            ...(failed
+              ? { errorCode: "GEMINI_BUSY" }
+              : { caseId: mystery.caseId }),
+          },
+        });
+      return route.fulfill({ json: dto });
+    });
+    await page.goto("/");
+    await page
+      .getByLabel("YOUR MYSTERY PREMISE")
+      .fill(
+        "A fictional observatory lens disappears during a rainy evening exhibition.",
+      );
+    await page.getByRole("button", { name: /create my mystery/i }).click();
+    if (failed) {
+      await expect(
+        page.getByRole("heading", { name: "This case needs attention." }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/Google Gemini is temporarily busy/),
+      ).toBeVisible();
+      await page.getByRole("button", { name: /back to the lobby/i }).click();
+      await expect(page.getByLabel("YOUR MYSTERY PREMISE")).toBeVisible();
+    } else {
+      await expect(page).toHaveURL(/room\/case_generated_browser/);
+      await expect(
+        page.getByRole("heading", { name: mystery.title }),
+      ).toBeVisible();
+    }
   });
 }

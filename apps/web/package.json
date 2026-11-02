@@ -13,11 +13,13 @@
   },
   "dependencies": {
     "@mystery/shared": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^5.0.4",
     "lucide-react": "^0.552.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.4",
+    "tailwindcss": "^4.3.3",
     "vite": "^7.1.12"
   },
   "devDependencies": {

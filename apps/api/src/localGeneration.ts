@@ -229,6 +229,8 @@ export function validateCanonicalDraft(draft: CanonicalDraft): void {
   );
 
   if (
+    new Set(draft.suspects.map((suspect) => suspect.name.trim().toLowerCase()))
+      .size !== draft.suspects.length ||
     suspectIds.size !== draft.suspects.length ||
     !suspectIds.has(draft.culpritId)
   ) {

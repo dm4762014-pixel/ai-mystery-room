@@ -1,53 +1,73 @@
 # AI Mystery Room
 
-This is the existing React/Vite + Express/Mongoose project, updated against the supplied submission guide. The existing interface and monorepo are retained. See [spec.md](./spec.md) for the guide amendment and historical architecture.
+The existing project, completed locally against the supplied guide. Read [SPEC.md](./SPEC.md) for the final blueprint and [deployment instructions](./docs/DEPLOYMENT.md) for Vercel, Render and MongoDB Atlas.
 
-## Run locally
+## Start locally
 
-Requires Node 20.19+ or 22.12+, pnpm 10+, and MongoDB.
+Requires Node.js 22.12+, pnpm 10+, Docker Desktop (or your own MongoDB), and a Gemini key for custom mysteries.
 
 ```powershell
-# Only copy this for a fresh setup; preserve an existing private .env.
+# Fresh installations only; preserve any existing private .env.
 Copy-Item .env.example .env
-pnpm install
-docker compose up -d mongo
-pnpm dev
+pnpm install --frozen-lockfile
+pnpm dev:local
 ```
 
-Open http://localhost:5173. Use the labeled seeded demo without AI credentials. The demo is a fixed medium mystery, not freshly generated AI output.
+Open http://localhost:5173 . `dev:local` starts Docker MongoDB and overrides its connection for this run, preserving saved Atlas configuration. Docker Desktop must already be running. With your own configured MongoDB, use `pnpm dev` instead.
 
-For Gemini, edit the private root `.env`: set `GENERATION_PROVIDER=gemini`, a valid `GEMINI_API_KEY`, `GEMINI_TEXT_MODEL=gemini-3.5-flash-lite` (or another accessible structured-output model), and deliberately set `AI_GENERATION_ENABLED=true`. The official SDK runs exclusively on the backend. Calls may consume provider quota; automated tests mock Gemini and never require a key. The author uses Gemini JSON mode with the complete output contract in its prompt, avoiding rejection of the deeply nested evidence schema by the provider. Every output still passes strict server-side Zod validation, cross-reference checks and an independent critic; malformed cases receive at most two repair attempts. Provider failures are sanitized. Temporary 502/503/504 errors retry twice with bounded backoff; successful drafts are retained while retrying the independent critic. Quota and permission failures do not retry.
+For AI generation, edit only the private `.env`: set `GEMINI_API_KEY`, `GENERATION_PROVIDER=gemini`, `GEMINI_TEXT_MODEL=gemini-3.5-flash-lite`, and deliberately set `AI_GENERATION_ENABLED=true`. The current local environment already has Gemini enabled. Real generation was verified at every difficulty; future provider availability and quota are not guaranteed. The labeled fixed demo and ordinary tests need no API key.
 
-For an explicit local alternative set `GENERATION_PROVIDER=ollama`, install Ollama and `ollama pull qwen3`; configure `LOCAL_LLM_MODEL` if needed. Local generation uses a loopback endpoint only. The current private environment is preserved; copying the example is not required for existing installations.
+## Play and scoring
 
-## Play
+Enter a fictional premise of 30-600 characters, select difficulty, and create a case. Actual job progress leads into the investigation room. Opening a clue records one unique discovery. Hint history and progress survive reload. Select a suspect, confirm the final accusation, then see the culprit, proof, explanation and backend score. Start another mystery from the results.
 
-Enter a fictional premise of 30?600 characters, select difficulty, and create a case. Generation progress leads into the existing investigation room. Opening a clue records a unique discovery on the backend; the counter shows discovered/total. Hints persist across refresh. Choose a suspect and confirm a final accusation to reveal the culprit, proof, explanation and backend score. Start another mystery from the result screen.
+| Difficulty | Suspects | Clues | Hints | Correct bonus |
+| ---------- | -------: | ----: | ----: | ------------: |
+| Easy       |        3 |     5 |     2 |           100 |
+| Medium     |        4 |     7 |     3 |           150 |
+| Hard       |        5 |     9 |     3 |           200 |
 
-| Difficulty | Suspects | Clues | Available hints | Correct bonus |
-|---|---:|---:|---:|---:|
-| Easy | 3 | 5 | 2 | 100 |
-| Medium | 4 | 7 | 3 | 150 |
-| Hard | 5 | 9 | 3 | 200 |
+Score = `max(0, correct bonus + 5 * unique discoveries - 10 * hints used)`. Wrong accusations have no correct bonus but retain discovery points. Repeated discoveries/hint keys are idempotent. Final grading and progress mutations are serialized; later investigation cannot change the result.
 
-Score is `max(0, correct bonus + 5 ? discovered clues ? 10 ? used hints)`. An incorrect accusation has no correct bonus but retains discovery points. Duplicate discoveries earn nothing extra. The hidden solution stays in a separate backend collection until the final accusation.
+## Architecture and safeguards
 
-Photo exhibits are schematic illustrations; CCTV is a text observation, not generated video. The submission guide requires Gemini mysteries, not photo/video generation. Existing custom CSS is retained rather than replacing the interface with Tailwind. Historical full-media requirements remain outside this guide update.
+React/TypeScript/Vite/Tailwind frontend, Express/Node backend, MongoDB/Mongoose persistence, shared Zod contracts, official Gemini SDK. Existing custom styling is retained alongside Tailwind.
 
-## Validation
+The author uses JSON response mode with the full contract in its prompt because the provider rejects the deeply nested native evidence schema. Strict local Zod parsing, deterministic references/counts and an independent Gemini critic remain mandatory before saving. Up to two semantic repairs are allowed; temporary 502/503/504 responses retry twice with bounded backoff. Successful drafts survive critic retries. Quota/access/schema failures do not cause unbounded calls.
 
-- `pnpm build`: compile backend/shared and build frontend.
-- `pnpm typecheck`: workspace TypeScript checks.
-- `pnpm lint`: formatting checks.
-- `pnpm test`: shared rules, mocked generation, real Express routes with isolated MongoDB.
-- `pnpm test:integration`: backend ownership, clues, hints, accusations and result checks.
-- `pnpm test:e2e`: Playwright browser checks.
-- `pnpm seed:demo`: seed a development mystery.
+The solution stays in a private collection until the final accusation. Resources belong to a random server-issued guest session; mutations require its cookie, exact allowed Origin and CSRF token. Production cookies are Secure/HttpOnly/SameSite=Lax. API/session limits and persisted daily caps protect generation: three cases per guest and thirty globally per UTC day by default, including failed attempts. One persistent API instance runs one generation at a time. Jobs persist in MongoDB and resume on restart. Multiple instances require a separate distributed queue/lock design.
 
-## API and deployment
+Photo exhibits are schematic illustrations and CCTV is text observation. No generated photos/video are claimed or required by the supplied guide. Ollama is an explicit optional provider, never an automatic Gemini substitute.
 
-Existing `/api/v1` endpoints are retained: guest session, capabilities, case creation/job polling, case retrieval, hints, accusations and results. Clue discovery is `POST /api/v1/cases/:caseId/clues/:clueId/discover`. Mutations require the guest cookie, matching `Origin` and CSRF token. Case/job/result access is scoped to its owning guest.
+## Commands
 
-Deployment is pending. Use a persistent Node host for the API/job loop and MongoDB Atlas; ephemeral serverless functions are unsuitable for this in-process queue. Deploy the frontend with a same-origin `/api` reverse proxy to the backend (required for cookies), configure `WEB_ORIGIN` to the public site origin, and use HTTPS. Production requires additional abuse/rate and spend controls before exposing generation publicly. Do not expose `.env` or enable paid generation as part of a default build.
+| Command                 | Purpose                                                           |
+| ----------------------- | ----------------------------------------------------------------- |
+| `pnpm dev:local`        | Start Docker MongoDB and both applications                        |
+| `pnpm dev`              | Run both applications using configured MongoDB                    |
+| `pnpm start`            | Persistent production API; runtime TypeScript via installed tsx   |
+| `pnpm build`            | Compile/check backend/shared and build frontend                   |
+| `pnpm typecheck`        | Workspace TypeScript checks                                       |
+| `pnpm lint`             | Formatting, including proxy and verification scripts              |
+| `pnpm test`             | Shared, generation, Mongo-backed API and proxy tests; no real AI  |
+| `pnpm test:integration` | API ownership, scores, hints, races and quotas                    |
+| `pnpm test:e2e`         | Desktop/mobile and generation/error browser flows with mocked API |
+| `pnpm check:secrets`    | Scan publishable files against local secrets/excluded env files   |
+| `pnpm test:live`        | Opt-in real AI/API flow at all three difficulties                 |
+| `pnpm seed:demo`        | Seed a development-only fixed mystery                             |
 
-Submission still needs a GitHub repository URL, public website URL and a verified live Gemini playthrough. No production deployment, publication or form submission is performed by the tests.
+Opt-in live check (consumes provider quota):
+
+```powershell
+$env:RUN_LIVE_AI_TESTS='true'
+$env:LIVE_BASE_URL='http://localhost:5173'
+pnpm test:live
+```
+
+Use the public origin after deployment. The check generates, investigates, requests a hint, accuses and checks results at each difficulty. Scores can be wrong-answer scores because it chooses a suspect without reading the secret solution.
+
+## Deliverables and publication
+
+Included: `SPEC.md`, tested original source, Render blueprint, Vercel API proxy/SPA routing, sanitized env example, deployment instructions, live checker and secret scan. See [submission status](./docs/SUBMISSION.md) and [verification report](./docs/VERIFICATION.md).
+
+Public repository, hosted URL, Atlas connectivity and final submission require signed-in accounts and valid private provider settings. Localhost and local live tests are not presented as public deployment. Private configuration and logs are excluded from Git and the source archive.

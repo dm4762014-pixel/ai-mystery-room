@@ -1,3 +1,5 @@
+import { rateLimit } from "express-rate-limit";
+import { serializeCaseMutation } from "./caseLock.js";
 import { generationStatus, usesGemini } from "./generation.js";
 import {
   createHash,
@@ -71,6 +73,7 @@ const sendError = (
 };
 
 const app = express();
+if (isProduction) app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
 app.use((request: Request, response: Response, next: NextFunction) => {
@@ -80,6 +83,36 @@ app.use((request: Request, response: Response, next: NextFunction) => {
   next();
 });
 app.use(express.json({ limit: "16kb", strict: true }));
+const limitHandler = (request: Request, response: Response) =>
+  sendError(
+    response,
+    request as AuthenticatedRequest,
+    429,
+    "RATE_LIMITED",
+    "Too many requests. Please try again later.",
+  );
+app.use(
+  "/api/v1",
+  rateLimit({
+    windowMs: 60_000,
+    limit: 300,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    skip: () => process.env.NODE_ENV === "test",
+    handler: limitHandler,
+  }),
+);
+app.use(
+  "/api/v1/sessions/guest",
+  rateLimit({
+    windowMs: 60 * 60_000,
+    limit: 60,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    skip: () => process.env.NODE_ENV === "test",
+    handler: limitHandler,
+  }),
+);
 
 app.get("/api/v1/health/live", (_request, response) =>
   response.json({ status: "ok" }),
@@ -436,6 +469,24 @@ app.post("/api/v1/cases", requireCsrf, async (request, response, next) => {
     });
     response.status(202).json(job);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      ["GENERATION_QUOTA_EXCEEDED", "GENERATION_IN_PROGRESS"].includes(
+        error.message,
+      )
+    ) {
+      const active = error.message === "GENERATION_IN_PROGRESS";
+      sendError(
+        response,
+        typed,
+        active ? 409 : 429,
+        error.message,
+        active
+          ? "Your previous mystery is still generating. Please wait for it to finish."
+          : "The daily mystery generation limit has been reached. Please try again tomorrow.",
+      );
+      return;
+    }
     if (error instanceof Error && error.message === "IDEMPOTENCY_CONFLICT") {
       sendError(
         response as Response,
@@ -513,6 +564,7 @@ app.get("/api/v1/cases/:caseId", async (request, response, next) => {
 app.post(
   "/api/v1/cases/:caseId/clues/:clueId/discover",
   requireCsrf,
+  serializeCaseMutation,
   async (request, response, next) => {
     try {
       const sessionHash = (request as AuthenticatedRequest).sessionHash;
@@ -590,6 +642,7 @@ app.get("/api/v1/cases/:caseId/hints", async (request, response, next) => {
 app.post(
   "/api/v1/cases/:caseId/hints",
   requireCsrf,
+  serializeCaseMutation,
   async (request, response, next) => {
     try {
       const sessionHash = (request as AuthenticatedRequest).sessionHash;
@@ -787,6 +840,7 @@ app.post(
 app.post(
   "/api/v1/cases/:caseId/accusations",
   requireCsrf,
+  serializeCaseMutation,
   async (request, response, next) => {
     try {
       const typed = request as AuthenticatedRequest;
