@@ -8,7 +8,7 @@ Create an empty `ai-mystery-room` repository in your intended GitHub account. Pu
 
 ## 2. MongoDB Atlas
 
-Create/select the project and cluster. Use a database user scoped to this application's database, and allow the backend host's outbound addresses through Atlas's network access list. Copy a valid, URL-encoded database connection URI into the backend host's private environment configuration. Enter credentials directly in the provider UI; do not paste them into chat, README, or GitHub. The saved local Atlas URI has previously failed authentication; the working local test database is Docker MongoDB.
+Create/select the project and cluster. Use a database user scoped to this application's database, and allow the backend host's outbound addresses through Atlas's network access list. Copy a valid, URL-encoded database connection URI into the backend host's private environment configuration. Enter credentials directly in the provider UI; do not paste them into chat, README, or GitHub. The saved Atlas URI was corrected and has passed authentication and ping. Keep it private; local automated tests use isolated MongoDB.
 
 ## 3. Render backend
 

@@ -25,8 +25,8 @@ Desktop (1280px) and mobile (375px) result screenshots were inspected. The brows
 - Gemini generation, clue discovery, hints, accusations, result and backend score: verified locally.
 - Invalid responses/provider failure handling and solution privacy: covered by tests.
 - Deployment preparation: Render service blueprint, Vercel same-origin API proxy, SPA fallback, production startup and documented private environment settings supplied.
-- GitHub source publication: pending; connected GitHub account is available for repository reads, but its connector cannot create the missing repository and local Git has no push credential.
-- MongoDB Atlas: pending valid deployment credentials/network access; the saved local Atlas configuration previously failed authentication. Local tests use Docker/isolated test MongoDB.
+- GitHub source publication: complete at https://github.com/dm4762014-pixel/ai-mystery-room . Local main was pushed and its remote commit verified.
+- MongoDB Atlas: authentication and ping now pass after correcting a typo in the saved private connection URI. Local automated tests still use isolated test MongoDB.
 - Public hosting: pending account sign-in and private configuration. No public deployment URL has been fabricated.
 - Public create-and-solve demonstration: pending a deployed URL.
 - Submission form: not submitted; requires actual repository/live URLs and any requested student identity details.

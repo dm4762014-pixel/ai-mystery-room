@@ -2,8 +2,8 @@
 
 - Project: the existing `D:\AI Mystery Room` workspace.
 - Specification: `SPEC.md`.
-- Repository URL: pending repository publication.
-- Public website URL: pending hosting sign-in, Atlas configuration and deployment.
+- Repository URL: https://github.com/dm4762014-pixel/ai-mystery-room . Source pushed and remote branch verified.
+- Public website URL: pending hosting configuration and deployment.
 - Local website: http://localhost:5173 . This is not a public submission URL.
 - Submission form: https://bit.ly/ai-mystery-room-sub-form . Not submitted.
 
