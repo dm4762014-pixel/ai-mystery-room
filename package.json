@@ -1,0 +1,26 @@
+{
+  "name": "ai-mystery-room",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.20.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @mystery/api --filter @mystery/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:integration": "pnpm --filter @mystery/api test:integration",
+    "test:e2e": "pnpm --filter @mystery/web test:e2e",
+    "seed:demo": "pnpm --filter @mystery/api seed:demo",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "start": "pnpm --filter @mystery/api start"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
