@@ -2,9 +2,10 @@ services:
   - type: web
     name: ai-mystery-room-api
     runtime: node
+    rootDir: server
     plan: free
     numInstances: 1
-    buildCommand: npm ci --include=dev --prefix server && npm run build --prefix server
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/v1/health/ready
     envVars:

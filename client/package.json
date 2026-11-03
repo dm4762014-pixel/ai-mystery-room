@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
-    "lint": "prettier --check src index.html playwright.config.ts e2e",
+    "lint": "prettier --check src api index.html vite.config.ts playwright.config.ts e2e vercel.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test"

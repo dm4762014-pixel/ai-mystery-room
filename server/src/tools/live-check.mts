@@ -1,4 +1,4 @@
-import "../server/src/env.js";
+import "../env.js";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
@@ -6,7 +6,7 @@ import {
   DIFFICULTY_RULES,
   PublicCaseSchema,
   type Difficulty,
-} from "../server/src/shared/index.js";
+} from "../shared/index.js";
 
 if (process.env.RUN_LIVE_AI_TESTS !== "true")
   throw new Error(

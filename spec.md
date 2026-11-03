@@ -78,7 +78,7 @@ Keep .env, all credentials, cookies and logs outside Git/source archives; .env.e
 
 ## Deployment and final deliverables
 
-Backend: persistent Node service (Render configuration supplied), production PORT, MongoDB Atlas connection, Gemini key/model, exact public WEB_ORIGIN and generation limits. Frontend: Vercel build of client, BACKEND_URL server-only proxy setting and SPA fallback. Provision no paid plan or billing automatically. The account owner signs in and enters secrets directly where required.
+Backend: persistent Node service (configuration in server/render.yaml), production PORT, MongoDB Atlas connection, Gemini key/model, exact public WEB_ORIGIN and generation limits. Frontend: Vercel root directory client with client/vercel.json, BACKEND_URL server-only proxy setting and SPA fallback. Provision no paid plan or billing automatically. The account owner signs in and enters secrets directly where required.
 
 Deliver: one complete spec.md, original project source on GitHub, public live website URL, accurate README/env example, passing tests/build, and one demonstrated create-investigate-hint-accuse-result flow on the public website. Submission form from the supplied guide: https://bit.ly/ai-mystery-room-sub-form . Repository and live URLs must be real, accessible, and verified before marking deployment/submission complete.
 

@@ -1,10 +1,23 @@
 const { spawnSync, spawn } = require("node:child_process");
 const path = require("node:path");
-const root = path.resolve(__dirname, "..");
-const database = spawnSync("docker", ["compose", "up", "-d", "mongo"], {
-  cwd: root,
-  stdio: "inherit",
-});
+const root = path.resolve(__dirname, "../../..");
+const database = spawnSync(
+  "docker",
+  [
+    "compose",
+    "-p",
+    "aimysteryroom",
+    "-f",
+    "server/docker-compose.yml",
+    "up",
+    "-d",
+    "mongo",
+  ],
+  {
+    cwd: root,
+    stdio: "inherit",
+  },
+);
 if (database.error || database.status !== 0) {
   console.error("Start Docker Desktop, then run npm run dev:local again.");
   process.exit(1);

@@ -1,6 +1,9 @@
-const { test, afterEach } = require("node:test");
+const { test, afterEach, before } = require("node:test");
 const assert = require("node:assert/strict");
-const proxy = require("../api/proxy.js");
+let proxy;
+before(async () => {
+  proxy = (await import("../../client/api/proxy.js")).default;
+});
 const originalFetch = global.fetch;
 const originalBackend = process.env.BACKEND_URL;
 afterEach(() => {

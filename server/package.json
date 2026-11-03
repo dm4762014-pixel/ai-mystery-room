@@ -12,7 +12,7 @@
     "test:integration": "vitest run test/integration.test.ts",
     "seed:demo": "tsx src/seed.ts",
     "start": "node --import tsx src/server.ts",
-    "test:live": "tsx ../scripts/live-check.mts"
+    "test:live": "tsx src/tools/live-check.mts"
   },
   "dependencies": {
     "@google/genai": "^2.32.0",

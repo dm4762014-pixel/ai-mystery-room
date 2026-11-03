@@ -1,5 +1,5 @@
 // Keep browser cookies same-origin while the persistent API runs elsewhere.
-module.exports = async function proxy(request, response) {
+export default async function proxy(request, response) {
   const fail = (status, code, message) =>
     response
       .status(status)
@@ -95,4 +95,4 @@ module.exports = async function proxy(request, response) {
       "The backend is starting or unavailable. Please try again shortly.",
     );
   }
-};
+}

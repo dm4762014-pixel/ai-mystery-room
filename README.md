@@ -1,6 +1,6 @@
 # AI Mystery Room
 
-The existing project, organized into client/ and server/ as requested. Read [spec.md](./spec.md) for the final blueprint and [deployment instructions](./docs/DEPLOYMENT.md) for Vercel, Render and MongoDB Atlas.
+The existing project, organized into client/ and server/ as requested. Read [spec.md](./spec.md) for the final blueprint and the deployment settings below for Vercel, Render and MongoDB Atlas.
 
 ## Folder layout
 
@@ -16,11 +16,7 @@ AI Mystery Room/
       shared/            One copy of shared validation contracts
     test/
     node_modules/        Generated backend dependencies
-  media/                 Generated screenshots and source archive (ignored by Git)
-  api/                   Vercel same-origin proxy
-  scripts/               Local launcher, live checks and secret scan
-  tests/                 Proxy tests
-  docs/                  Deployment instructions and verification
+  media/                 Project media (generated captures are ignored)
   .env                   Existing private configuration, retained as fallback
   package.json           npm commands for both applications
   package-lock.json
@@ -28,7 +24,7 @@ AI Mystery Room/
   spec.md
 ```
 
-Each application is an independent npm package with its own package-lock.json. The old apps/, packages/ and pnpm files are removed. Keep api/, scripts/, tests/, docs/ and deployment configuration: they are used by the app's checks and hosting. Dependencies and builds are generated, not committed.
+Each application has its own npm package and lockfile. The frontend proxy is in `client/api`; backend tools and checks are in `server/src/tools` and `server/test`. Hosting configuration stays inside the application it deploys. Dependencies and builds are generated, not committed.
 
 ## Start locally
 
@@ -96,8 +92,12 @@ npm run test:live
 
 Use the public origin after deployment. The check generates, investigates, requests a hint, accuses and checks results at each difficulty. Scores can be wrong-answer scores because it chooses a suspect without reading the secret solution.
 
-## Deliverables and publication
+## Deployment and submission status
 
-Included: `spec.md`, tested original source, Render blueprint, Vercel API proxy/SPA routing, sanitized env example, deployment instructions, live checker and secret scan. See [submission status](./docs/SUBMISSION.md) and [verification report](./docs/VERIFICATION.md).
+Existing repository: https://github.com/dm4762014-pixel/ai-mystery-room . Public deployment and final submission remain pending.
 
-Public repository, hosted URL, Atlas connectivity and final submission require signed-in accounts and valid private provider settings. Localhost and local live tests are not presented as public deployment. Private configuration and logs are excluded from Git and the source archive.
+For Render, use root directory `server`, build command `npm ci --include=dev && npm run build`, and start command `npm start`. The blueprint is `server/render.yaml`. Set the private MongoDB URI and Gemini key in the hosting environment, along with the exact frontend `WEB_ORIGIN`. Keep a single persistent instance. Local private configuration is excluded from Git.
+
+For Vercel, use root directory `client` and its `vercel.json`. Enable access to source files outside that directory so the frontend can import `server/src/shared`. Set server-only `BACKEND_URL` to the actual Render origin. Never prefix secrets with `VITE_`.
+
+After deployment, verify a complete real create-investigate-hint-accuse-result flow and submit the verified repository and public website URLs through the guide's form: https://bit.ly/ai-mystery-room-sub-form . Localhost checks do not establish public deployment.
