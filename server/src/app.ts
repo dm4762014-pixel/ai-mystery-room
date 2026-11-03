@@ -330,19 +330,6 @@ app.use(
 
 app.post("/api/v1/demo-case", requireCsrf, async (request, response, next) => {
   try {
-    if (
-      process.env.NODE_ENV !== "development" &&
-      process.env.NODE_ENV !== "test"
-    ) {
-      sendError(
-        response,
-        request as AuthenticatedRequest,
-        404,
-        "NOT_FOUND",
-        "This resource was not found.",
-      );
-      return;
-    }
     const sessionHash = (request as AuthenticatedRequest).sessionHash;
     if (!sessionHash) throw new Error("Authenticated session is missing.");
     const existing = await MysteryCase.findOne({

@@ -94,7 +94,7 @@ Use the public origin after deployment. The check generates, investigates, reque
 
 ## Deployment and submission status
 
-Existing repository: https://github.com/dm4762014-pixel/ai-mystery-room . Public deployment and final submission remain pending.
+Existing repository: https://github.com/dm4762014-pixel/ai-mystery-room . Production frontend: https://client-red-two-13.vercel.app . Backend: https://ai-mystery-room-2elx.onrender.com . Both were connected on 3 November 2026. Live Gemini checks passed at easy, medium and hard through the production frontend: exact counts, hidden solution before accusation, persistent discoveries/hints, verdict, explanation and server score. Final submission remains pending.
 
 For Render, use root directory `server`, build command `npm ci --include=dev && npm run build`, and start command `npm start`. The blueprint is `server/render.yaml`. Set the private MongoDB URI and Gemini key in the hosting environment, along with the exact frontend `WEB_ORIGIN`. Keep a single persistent instance. Local private configuration is excluded from Git.
 

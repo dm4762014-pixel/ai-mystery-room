@@ -237,7 +237,7 @@ function HomePage({
               <UserRound size={15} /> 3-5 suspects
             </span>
             <span>
-              <FileText size={15} /> 6–8 exhibits
+              <FileText size={15} /> 5–9 exhibits
             </span>
             <span>
               <Clock3 size={15} /> One sitting
