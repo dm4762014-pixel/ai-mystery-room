@@ -23,7 +23,7 @@ import {
   LocalGenerationDisclosure,
   PublicCaseSchema,
   type PublicCaseDTO,
-} from "@mystery/shared";
+} from "./shared/index.js";
 import { createDemoCase } from "./demoCase.js";
 import { LocalModelError } from "./localGeneration.js";
 import { enqueueLocalGeneration } from "./localGenerationJobs.js";

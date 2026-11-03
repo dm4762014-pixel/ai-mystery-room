@@ -17,8 +17,14 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
-import type { Evidence, PublicCaseDTO } from "@mystery/shared";
-import { DIFFICULTY_RULES, LocalGenerationDisclosure } from "@mystery/shared";
+import type {
+  Evidence,
+  PublicCaseDTO,
+} from "../../../server/src/shared/index.js";
+import {
+  DIFFICULTY_RULES,
+  LocalGenerationDisclosure,
+} from "../../../server/src/shared/index.js";
 import {
   discoverClue,
   accuse,

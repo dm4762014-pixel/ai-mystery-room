@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DIFFICULTY_RULES, type Difficulty } from "@mystery/shared";
+import { DIFFICULTY_RULES, type Difficulty } from "./shared/index.js";
 import { createDemoCase } from "./demoCase.js";
 const { generateContent } = vi.hoisted(() => ({ generateContent: vi.fn() }));
 vi.mock("@google/genai", () => ({

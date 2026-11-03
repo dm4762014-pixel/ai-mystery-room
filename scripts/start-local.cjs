@@ -6,15 +6,15 @@ const database = spawnSync("docker", ["compose", "up", "-d", "mongo"], {
   stdio: "inherit",
 });
 if (database.error || database.status !== 0) {
-  console.error("Start Docker Desktop, then run pnpm dev:local again.");
+  console.error("Start Docker Desktop, then run npm run dev:local again.");
   process.exit(1);
 }
-const pnpm = process.env.npm_execpath;
-if (!pnpm) {
-  console.error("Run this helper using pnpm dev:local.");
+const npm = process.env.npm_execpath;
+if (!npm) {
+  console.error("Run this helper using npm run dev:local.");
   process.exit(1);
 }
-const child = spawn(process.execPath, [pnpm, "dev"], {
+const child = spawn(process.execPath, [npm, "run", "dev"], {
   cwd: root,
   stdio: "inherit",
   env: {

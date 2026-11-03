@@ -4,8 +4,8 @@ services:
     runtime: node
     plan: free
     numInstances: 1
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @mystery/api build
-    startCommand: pnpm start
+    buildCommand: npm ci --include=dev --prefix server && npm run build --prefix server
+    startCommand: npm start
     healthCheckPath: /api/v1/health/ready
     envVars:
       - key: NODE_VERSION

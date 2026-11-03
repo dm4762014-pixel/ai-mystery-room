@@ -14,8 +14,8 @@ Create/select the project and cluster. Use a database user scoped to this applic
 
 The root `render.yaml` describes the Node service. Import the GitHub repository as a Blueprint, or create a Node Web Service from the repository root:
 
-- Build: `corepack enable && pnpm install --frozen-lockfile && pnpm --filter @mystery/api build`
-- Start: `pnpm start`
+- Build: `npm ci --include=dev --prefix server && npm run build --prefix server`
+- Start: `npm start`
 - Health: `/api/v1/health/ready`
 - Keep exactly one instance; the persisted MongoDB jobs are processed in that instance.
 
@@ -38,7 +38,7 @@ Run the opt-in live check against the final URL:
 ```powershell
 $env:RUN_LIVE_AI_TESTS='true'
 $env:LIVE_BASE_URL='https://your-final-site.vercel.app'
-pnpm test:live
+npm run test:live
 ```
 
 This creates and completes one real AI case at each difficulty. It consumes provider quota; normal tests do not. Also manually create and solve a mystery in the public browser, including a page reload. Record the GitHub repository URL and the public website URL in `docs/SUBMISSION.md`, then submit them through the form linked in the guide. Enter any requested student identity details yourself or provide the non-sensitive fields explicitly. Do not mark the form submitted until its success page is observed.

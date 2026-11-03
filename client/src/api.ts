@@ -11,7 +11,7 @@ import {
   HintResponseSchema,
   PublicCaseSchema,
   type PublicCaseDTO,
-} from "@mystery/shared";
+} from "../../server/src/shared/index.js";
 
 let csrfToken = "";
 let sessionRequest: Promise<void> | null = null;

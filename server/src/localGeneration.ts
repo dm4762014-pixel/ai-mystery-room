@@ -5,7 +5,7 @@ import {
   type CanonicalDraft,
   type Difficulty,
   type Evidence,
-} from "@mystery/shared";
+} from "./shared/index.js";
 
 const OllamaTagsSchema = z.object({
   models: z.array(z.object({ name: z.string() })),

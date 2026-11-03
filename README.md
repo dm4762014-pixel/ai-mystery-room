@@ -1,21 +1,51 @@
 # AI Mystery Room
 
-The existing project, completed locally against the supplied guide. Read [SPEC.md](./SPEC.md) for the final blueprint and [deployment instructions](./docs/DEPLOYMENT.md) for Vercel, Render and MongoDB Atlas.
+The existing project, organized into client/ and server/ as requested. Read [spec.md](./spec.md) for the final blueprint and [deployment instructions](./docs/DEPLOYMENT.md) for Vercel, Render and MongoDB Atlas.
+
+## Folder layout
+
+```text
+AI Mystery Room/
+  client/                React/Vite frontend, its npm lockfile and public-only .env
+    src/
+    e2e/
+    dist/                Generated frontend build
+    node_modules/        Generated frontend dependencies
+  server/                Express API, its npm lockfile and private overrides
+    src/
+      shared/            One copy of shared validation contracts
+    test/
+    node_modules/        Generated backend dependencies
+  media/                 Generated screenshots and source archive (ignored by Git)
+  api/                   Vercel same-origin proxy
+  scripts/               Local launcher, live checks and secret scan
+  tests/                 Proxy tests
+  docs/                  Deployment instructions and verification
+  .env                   Existing private configuration, retained as fallback
+  package.json           npm commands for both applications
+  package-lock.json
+  README.md
+  spec.md
+```
+
+Each application is an independent npm package with its own package-lock.json. The old apps/, packages/ and pnpm files are removed. Keep api/, scripts/, tests/, docs/ and deployment configuration: they are used by the app's checks and hosting. Dependencies and builds are generated, not committed.
 
 ## Start locally
 
-Requires Node.js 22.12+, pnpm 10+, Docker Desktop (or your own MongoDB), and a Gemini key for custom mysteries.
+Requires Node.js 22.12+, npm, Docker Desktop (or your own MongoDB), and a Gemini key for custom mysteries.
 
 ```powershell
 # Fresh installations only; preserve any existing private .env.
-Copy-Item .env.example .env
-pnpm install --frozen-lockfile
-pnpm dev:local
+Copy-Item server/.env.example server/.env
+Copy-Item client/.env.example client/.env
+npm install
+npm run setup
+npm run dev:local
 ```
 
-Open http://localhost:5173 . `dev:local` starts Docker MongoDB and overrides its connection for this run, preserving saved Atlas configuration. Docker Desktop must already be running. With your own configured MongoDB, use `pnpm dev` instead.
+Open http://localhost:5173 . `dev:local` starts Docker MongoDB and overrides its connection for this run, preserving saved Atlas configuration. Docker Desktop must already be running. With your own configured MongoDB, use `npm run dev` instead.
 
-For AI generation, edit only the private `.env`: set `GEMINI_API_KEY`, `GENERATION_PROVIDER=gemini`, `GEMINI_TEXT_MODEL=gemini-3.5-flash-lite`, and deliberately set `AI_GENERATION_ENABLED=true`. The current local environment already has Gemini enabled. Real generation was verified at every difficulty; future provider availability and quota are not guaranteed. The labeled fixed demo and ordinary tests need no API key.
+For AI generation, edit the private `server/.env` (existing root `.env` settings remain a fallback): set `GEMINI_API_KEY`, `GENERATION_PROVIDER=gemini`, `GEMINI_TEXT_MODEL=gemini-3.5-flash-lite`, and deliberately set `AI_GENERATION_ENABLED=true`. The current local environment already has Gemini enabled. Real generation was verified at every difficulty; future provider availability and quota are not guaranteed. The labeled fixed demo and ordinary tests need no API key.
 
 ## Play and scoring
 
@@ -41,33 +71,33 @@ Photo exhibits are schematic illustrations and CCTV is text observation. No gene
 
 ## Commands
 
-| Command                 | Purpose                                                           |
-| ----------------------- | ----------------------------------------------------------------- |
-| `pnpm dev:local`        | Start Docker MongoDB and both applications                        |
-| `pnpm dev`              | Run both applications using configured MongoDB                    |
-| `pnpm start`            | Persistent production API; runtime TypeScript via installed tsx   |
-| `pnpm build`            | Compile/check backend/shared and build frontend                   |
-| `pnpm typecheck`        | Workspace TypeScript checks                                       |
-| `pnpm lint`             | Formatting, including proxy and verification scripts              |
-| `pnpm test`             | Shared, generation, Mongo-backed API and proxy tests; no real AI  |
-| `pnpm test:integration` | API ownership, scores, hints, races and quotas                    |
-| `pnpm test:e2e`         | Desktop/mobile and generation/error browser flows with mocked API |
-| `pnpm check:secrets`    | Scan publishable files against local secrets/excluded env files   |
-| `pnpm test:live`        | Opt-in real AI/API flow at all three difficulties                 |
-| `pnpm seed:demo`        | Seed a development-only fixed mystery                             |
+| Command                    | Purpose                                                           |
+| -------------------------- | ----------------------------------------------------------------- |
+| `npm run dev:local`        | Start Docker MongoDB and both applications                        |
+| `npm run dev`              | Run both applications using configured MongoDB                    |
+| `npm start`                | Persistent production API; runtime TypeScript via installed tsx   |
+| `npm run build`            | Type-check server/shared and build frontend                       |
+| `npm run typecheck`        | Workspace TypeScript checks                                       |
+| `npm run lint`             | Formatting, including proxy and verification scripts              |
+| `npm test`                 | Shared, generation, Mongo-backed API and proxy tests; no real AI  |
+| `npm run test:integration` | API ownership, scores, hints, races and quotas                    |
+| `npm run test:e2e`         | Desktop/mobile and generation/error browser flows with mocked API |
+| `npm run check:secrets`    | Scan publishable files against local secrets/excluded env files   |
+| `npm run test:live`        | Opt-in real AI/API flow at all three difficulties                 |
+| `npm run seed:demo`        | Seed a development-only fixed mystery                             |
 
 Opt-in live check (consumes provider quota):
 
 ```powershell
 $env:RUN_LIVE_AI_TESTS='true'
 $env:LIVE_BASE_URL='http://localhost:5173'
-pnpm test:live
+npm run test:live
 ```
 
 Use the public origin after deployment. The check generates, investigates, requests a hint, accuses and checks results at each difficulty. Scores can be wrong-answer scores because it chooses a suspect without reading the secret solution.
 
 ## Deliverables and publication
 
-Included: `SPEC.md`, tested original source, Render blueprint, Vercel API proxy/SPA routing, sanitized env example, deployment instructions, live checker and secret scan. See [submission status](./docs/SUBMISSION.md) and [verification report](./docs/VERIFICATION.md).
+Included: `spec.md`, tested original source, Render blueprint, Vercel API proxy/SPA routing, sanitized env example, deployment instructions, live checker and secret scan. See [submission status](./docs/SUBMISSION.md) and [verification report](./docs/VERIFICATION.md).
 
 Public repository, hosted URL, Atlas connectivity and final submission require signed-in accounts and valid private provider settings. Localhost and local live tests are not presented as public deployment. Private configuration and logs are excluded from Git and the source archive.

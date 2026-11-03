@@ -4,7 +4,7 @@ import {
   CanonicalDraftSchema,
   DIFFICULTY_RULES,
   type Difficulty,
-} from "@mystery/shared";
+} from "./shared/index.js";
 import {
   authorLocalCanonical,
   getLocalModelStatus,

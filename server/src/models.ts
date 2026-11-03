@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import type { Evidence, Suspect } from "@mystery/shared";
+import type { Evidence, Suspect } from "./shared/index.js";
 
 export interface GuestSessionDocument {
   sessionHash: string;

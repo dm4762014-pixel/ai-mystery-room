@@ -1,4 +1,4 @@
-import { createDemoCase } from "../../api/src/demoCase.js";
+import { createDemoCase } from "../../server/src/demoCase.js";
 import { expect, test } from "@playwright/test";
 
 test("home page explains and offers the seeded demo", async ({ page }) => {
@@ -146,7 +146,7 @@ for (const width of [1280, 375]) {
       ),
     ).toBe(true);
     await page.screenshot({
-      path: `../../artifacts/screenshots/result-${width}.png`,
+      path: `../media/screenshots/result-${width}.png`,
       fullPage: true,
     });
     await page.getByRole("button", { name: /start a new mystery/i }).click();

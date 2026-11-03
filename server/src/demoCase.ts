@@ -1,4 +1,4 @@
-import { FICTION_DISCLOSURE } from "@mystery/shared";
+import { FICTION_DISCLOSURE } from "./shared/index.js";
 import type { CaseDocument, CaseSecretDocument } from "./models.js";
 
 const stamp = (hour: number, minute = 0): string =>

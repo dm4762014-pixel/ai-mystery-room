@@ -1,5 +1,5 @@
 {
-  "name": "@mystery/web",
+  "name": "ai-mystery-room-client",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@mystery/shared": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^5.0.4",
     "lucide-react": "^0.552.0",
@@ -28,6 +27,7 @@
     "@types/react-dom": "^19.2.2",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@types/node": "^24.10.0"
   }
 }

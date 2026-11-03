@@ -9,7 +9,7 @@ A single-player web game lets casual mystery players enter a fictional premise, 
 
 ## Scope and stack
 
-Required: React, TypeScript, Vite, Tailwind CSS, Node.js, Express, MongoDB/Mongoose, official @google/genai SDK, Zod validation. Retain the existing pnpm workspace: apps/web frontend, apps/api backend, packages/shared schemas. The existing detective interface and custom CSS remain, with Tailwind utilities integrated using its Vite plugin.
+Required: React, TypeScript, Vite, Tailwind CSS, Node.js, Express, MongoDB/Mongoose, official @google/genai SDK, Zod validation. Retain the existing client/server project: client frontend, server backend, shared schemas under server/src/shared. The existing detective interface and custom CSS remain, with Tailwind utilities integrated using its Vite plugin.
 
 Core: premise entry, three difficulties, async generation, suspect statements, clue discovery/progress, hints, final accusation, results, restart, persistence, mobile layout and clear failures. Optional existing notes/bookmarks and demo remain. Excluded: accounts, payments, multiplayer, real-person accusations and generated image/video assets. Exhibit illustrations are explicitly schematic and CCTV observations are text; the supplied guide does not require generated media.
 
@@ -78,9 +78,9 @@ Keep .env, all credentials, cookies and logs outside Git/source archives; .env.e
 
 ## Deployment and final deliverables
 
-Backend: persistent Node service (Render configuration supplied), production PORT, MongoDB Atlas connection, Gemini key/model, exact public WEB_ORIGIN and generation limits. Frontend: Vercel build of apps/web, BACKEND_URL server-only proxy setting and SPA fallback. Provision no paid plan or billing automatically. The account owner signs in and enters secrets directly where required.
+Backend: persistent Node service (Render configuration supplied), production PORT, MongoDB Atlas connection, Gemini key/model, exact public WEB_ORIGIN and generation limits. Frontend: Vercel build of client, BACKEND_URL server-only proxy setting and SPA fallback. Provision no paid plan or billing automatically. The account owner signs in and enters secrets directly where required.
 
-Deliver: one complete SPEC.md, original project source on GitHub, public live website URL, accurate README/env example, passing tests/build, and one demonstrated create-investigate-hint-accuse-result flow on the public website. Submission form from the supplied guide: https://bit.ly/ai-mystery-room-sub-form . Repository and live URLs must be real, accessible, and verified before marking deployment/submission complete.
+Deliver: one complete spec.md, original project source on GitHub, public live website URL, accurate README/env example, passing tests/build, and one demonstrated create-investigate-hint-accuse-result flow on the public website. Submission form from the supplied guide: https://bit.ly/ai-mystery-room-sub-form . Repository and live URLs must be real, accessible, and verified before marking deployment/submission complete.
 
 ## Acceptance criteria and verification
 

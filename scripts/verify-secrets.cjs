@@ -3,10 +3,16 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { createRequire } = require("node:module");
 const root = path.resolve(__dirname, "..");
-const apiRequire = createRequire(path.join(root, "apps/api/package.json"));
+const apiRequire = createRequire(path.join(root, "server/package.json"));
 const { parse } = apiRequire("dotenv");
 const envFile = path.join(root, ".env");
-const env = fs.existsSync(envFile) ? parse(fs.readFileSync(envFile)) : {};
+const serverEnvFile = path.join(root, "server/.env");
+const env = {
+  ...(fs.existsSync(envFile) ? parse(fs.readFileSync(envFile)) : {}),
+  ...(fs.existsSync(serverEnvFile)
+    ? parse(fs.readFileSync(serverEnvFile))
+    : {}),
+};
 const secrets = [env.GEMINI_API_KEY];
 try {
   const uri = new URL(env.MONGODB_URI);
@@ -23,7 +29,9 @@ const files = execFileSync(
   .split("\0")
   .filter(Boolean);
 const forbidden = files.filter(
-  (file) => /(^|\/)\.env($|\.)/.test(file) && file !== ".env.example",
+  (file) =>
+    /(^|\/)\.env($|\.)/.test(file) &&
+    path.posix.basename(file) !== ".env.example",
 );
 const leaked = [];
 for (const file of files) {

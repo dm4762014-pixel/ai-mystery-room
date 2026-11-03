@@ -10,5 +10,6 @@ test-results/
 .env.*
 !.env.example
 .vercel/
-artifacts/
+media/screenshots/
+media/*.zip
 .local-data/
